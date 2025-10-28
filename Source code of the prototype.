@@ -1,1 +1,12 @@
+Research Paper Q&A Agent Prototype
+Source Code of the Prototype
 
+The repository contains a Python-based prototype implementing the research-paper Q&A agent. The code is organized into clear modules: for example, agent.py (main entrypoint to run the chat loop), retriever.py (builds the vector index of paper text and handles search queries), model_interface.py (wraps the LLM API calls or local model inference), and finetune.py (script to fine-tune the model on a QA dataset). Additional utilities (e.g. pdf_reader.py for extracting text from PDFs, utils.py for helper functions) support preprocessing. Key files include requirements.txt (listing Python dependencies like Hugging Face Transformers, FAISS, langchain, sentence-transformers, etc.) and the main README.md (this document).
+
+To run the agent, install the requirements and launch the main script. For example:
+
+pip install -r requirements.txt
+python agent.py --paper_path path/to/research_paper.pdf
+
+
+This starts a chat session: the user can type questions about the paper, and the agent will retrieve relevant sections and answer. The design is modular, so one can easily swap out the LLM (e.g. changing API keys or model name in model_interface.py), or point the retriever at a different corpus.
