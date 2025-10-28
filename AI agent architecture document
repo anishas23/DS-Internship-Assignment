@@ -1,1 +1,26 @@
+Our system follows an augmented-LM (LLM) architecture: a large language model is enhanced with retrieval and tool-usage capabilities
+anthropic.com
+. We specifically implement a Retrieval-Augmented Generation (RAG) pipeline, in which the LLM consults a vector index of paper content when answering questions. Concretely, when the user asks a question, the agent encodes the query into an embedding and uses that to search a vector database of document chunks. The top-matching passages (from the indexed paper) are then included as context in the prompt sent to the LLM. This lets the model access up-to-date, domain-specific information from the paper without retraining
+lakefs.io
+.
 
+Key components and data flow:
+
+Document Ingestion and Indexing: The system extracts text from input PDFs (using a library like PyMuPDF), splits it into manageable chunks (e.g. paragraphs), and computes embeddings (e.g. with a Sentence-BERT or SciBERT encoder). These embeddings are stored in a vector database (such as FAISS or Pinecone) for fast similarity search
+lakefs.io
+.
+
+Retrieval Module: At query time, the user’s question is embedded with the same encoder and compared against the vector index. This retrieves the most relevant chunks of the paper. The basic RAG pipeline thus has two phases: 1. Data Indexing (preprocessing the paper into embeddings) and 2. Retrieval + Generation (search + answer generation)
+lakefs.io
+.
+
+LLM and Generation: We use a large language model (e.g. LLaMA-2 or GPT-3.5) as the core. This LLM is fine-tuned for the QA task (see below) and is called by the model_interface.py. Given the retrieved context and the question, the LLM generates a response. Following recommended practice, we keep the design simple and composable: one LLM call is made per question with the retrieved context
+anthropic.com
+anthropic.com
+.
+
+Conversation Manager: A lightweight loop (in agent.py) sequences the user input, retrieval, and generation. In multi-turn scenarios, the agent optionally maintains dialogue history (chat memory) for context. No complex tool orchestration is used — we rely on the single retrieval + generation step per query, as advised by Anthropic for efficient agents
+anthropic.com
+.
+
+This architecture was chosen to balance accuracy and efficiency. By combining retrieval with a fine-tuned LLM, the agent grounds its answers in the actual paper text, reducing hallucinations. The modular design means one could plug in different tools (e.g. calculators or external APIs) if needed, but our prototype focuses on the retrieval and generation modules as the primary “augmented” components
